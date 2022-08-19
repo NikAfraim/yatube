@@ -14,17 +14,18 @@ COUNT_OF_POST = 13
 NUMBER_OF_POSTS_IN_OTHER_GROUP_LIST = 0
 LIST_OF_POSTS_BY_UNFOLLOWER = []
 
+
 class PostViewTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
         small_gif = (
-             b'\x47\x49\x46\x38\x39\x61\x02\x00'
-             b'\x01\x00\x80\x00\x00\x00\x00\x00'
-             b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-             b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-             b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-             b'\x0A\x00\x3B'
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3B'
         )
         cls.uploaded = SimpleUploadedFile(
             name='small.gif',
@@ -36,8 +37,8 @@ class PostViewTests(TestCase):
         cls.group = Group.objects.create(title='Заголовок', slug='test-slug',
                                          description='text')
         cls.other_group = Group.objects.create(title='Заголовок',
-                                           slug='other-test-slug',
-                                           description='text')
+                                               slug='other-test-slug',
+                                               description='text')
         cls.post = Post.objects.create(text='Текст', author=cls.user,
                                        group=cls.group, image=cls.uploaded)
         cls.comment = Comment.objects.create(
@@ -137,7 +138,7 @@ class PostViewTests(TestCase):
         comment = reverse('posts:add_comment', args=(self.post.id,))
         self.assertRedirects(response, f'{login}?next={comment}')
         response = self.authorized_user.get(reverse('posts:add_comment',
-                                               args=(self.post.id,)))
+                                            args=(self.post.id,)))
         self.assertRedirects(response, reverse('posts:post_detail',
                                                args=(self.post.id,)))
 
@@ -165,17 +166,15 @@ class PostViewTests(TestCase):
         появляются в ленте у фоловера и
         не появляются у не фоловера"""
         Post.objects.all().delete()
-        print(Post.objects.count())
-        new_post = Post.objects.create(
+        Post.objects.create(
             text='Текст',
             author=self.user,
         )
-        print(Post.objects.count())
         response = self.user_check_follow.get(reverse(
             'posts:follow_index'))
         posts_by_unfollower = list(response.context['page_obj'])
         self.assertEqual(LIST_OF_POSTS_BY_UNFOLLOWER,
-                            posts_by_unfollower)
+                         posts_by_unfollower)
         Follow.objects.create(author=self.user,
                               user=self.other_user)
         response = self.user_check_follow.get(reverse(
@@ -183,20 +182,6 @@ class PostViewTests(TestCase):
         posts_by_follower = list(response.context['page_obj'])
         self.assertNotEqual(LIST_OF_POSTS_BY_UNFOLLOWER,
                             posts_by_follower)
-
-        # response = self.follower.get(reverse('posts:follow_index'))
-        # follow_posts_context = response.context['page_obj'][0]
-        # self.assertEqual(follow_posts_context.text, self.post.text)
-        # self.assertEqual(follow_posts_context.pub_date, self.post.pub_date)
-        # self.assertEqual(follow_posts_context.author, self.post.author)
-        # self.assertEqual(follow_posts_context.group, self.post.group)
-        # response = self.unfollower.get(reverse('posts:follow_index'))
-        # follow_posts_context = response.context['page_obj']
-        # self.assertTrue(follow_posts_context == {})
-        # self.assertNotEqual(follow_posts_context.text, self.post.text)
-        # self.assertNotEqual(follow_posts_context.pub_date, self.post.pub_date)
-        # self.assertNotEqual(follow_posts_context.author, self.post.author)
-        # self.assertNotEqual(follow_posts_context.group, self.post.group)
 
 
 class PaginatorViewsTest(TestCase):

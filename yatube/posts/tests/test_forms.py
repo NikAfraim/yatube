@@ -47,7 +47,6 @@ class PostFormTests(TestCase):
         self.authorized_user.force_login(self.user)
         cache.clear()
 
-
     def test_authorized_user_create_post(self):
         """Проверка валидации и создания новой записи Post"""
         post_count = Post.objects.count()

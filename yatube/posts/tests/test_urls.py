@@ -4,7 +4,7 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from http import HTTPStatus
 
-from ..models import Comment, Group, Post
+from ..models import Group, Post
 
 User = get_user_model()
 
