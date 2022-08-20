@@ -38,11 +38,13 @@ def profile(request, username):
 
 
 def post_detail(request, post_id):
-    post = get_object_or_404(Post.objects.prefetch_related('comments__author'), id=post_id)
+    post = get_object_or_404(Post.objects.prefetch_related('comments__author'),
+                             id=post_id)
     form = CommentForm(request.POST or None)
-    return render(request, 'posts/post_detail.html', {'post': post,
-                                                      'form': form,
-                                                      'comments': post.comments.all()})
+    return render(request, 'posts/post_detail.html',
+                  {'post': post,
+                   'form': form,
+                   'comments': post.comments.all()})
 
 
 @login_required
@@ -98,5 +100,6 @@ def profile_follow(request, username):
 
 @login_required
 def profile_unfollow(request, username):
-    Follow.objects.filter(author__username=username, user=request.user).delete()
+    Follow.objects.filter(author__username=username,
+                          user=request.user).delete()
     return redirect('posts:profile', username=username)

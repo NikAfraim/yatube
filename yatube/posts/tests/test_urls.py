@@ -35,17 +35,25 @@ class PostURLTests(TestCase):
         self.follower = Client()
         self.follower.force_login(self.user_follower)
         self.urls = (
-            ('posts:index', None, '/'),
+            ('posts:index', None,
+             '/'),
             ('posts:group_list', (self.group.slug,),
              f'/group/{self.group.slug}/'),
-            ('posts:profile', (self.user,), f'/profile/{self.user}/'),
-            ('posts:post_detail', (self.post.id,), f'/posts/{self.post.id}/'),
-            ('posts:post_create', None, f'/posts/{self.post.id}/edit/'),
-            ('posts:post_edit', (self.post.id,), '/create/'),
-            ('posts:add_comment', (self.post.id,), f'/posts/{self.post.id}/comment/'),
+            ('posts:profile', (self.user,),
+             f'/profile/{self.user}/'),
+            ('posts:post_detail', (self.post.id,),
+             f'/posts/{self.post.id}/'),
+            ('posts:post_create', None,
+             f'/posts/{self.post.id}/edit/'),
+            ('posts:post_edit', (self.post.id,),
+             '/create/'),
+            ('posts:add_comment', (self.post.id,),
+             f'/posts/{self.post.id}/comment/'),
             ('posts:follow_index', None, '/follow/'),
-            ('posts:profile_follow', (self.user,), f'profile/{self.user.username}/follow'),
-            ('posts:profile_unfollow', (self.user_follower,), f'profile/{self.user_follower}/unfollow')
+            ('posts:profile_follow', (self.user,),
+             f'profile/{self.user.username}/follow'),
+            ('posts:profile_unfollow', (self.user_follower,),
+             f'profile/{self.user_follower}/unfollow')
 
         )
         cache.clear()
