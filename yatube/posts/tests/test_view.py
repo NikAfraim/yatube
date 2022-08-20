@@ -212,6 +212,13 @@ class PostViewTests(TestCase):
         follow = Follow.objects.first()
         self.assertEqual(follow.author, self.user)
         self.assertEqual(follow.user, self.other_user)
+        print(Follow.objects.count())
+        Follow.objects.all().delete()
+        print(Follow.objects.count())
+        self.authorized_user.get(reverse(
+            'posts:profile_follow', args=(self.user,)))
+        print(Follow.objects.count())
+        self.assertEqual(ZERO_FOLLOWER, Follow.objects.count())
 
     def test_unfollow(self):
         """Проверка, что авторизированный пользователь, может отписываться"""
