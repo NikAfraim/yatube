@@ -175,10 +175,10 @@ class PostViewTests(TestCase):
         response_first = self.authorized_user.get(reverse('posts:index'))
         Post.objects.all().delete()
         response_second = self.authorized_user.get(reverse('posts:index'))
-        self.assertEquals(response_first.content, response_second.content)
+        self.assertEqual(response_first.content, response_second.content)
         cache.clear()
         response_third = self.authorized_user.get(reverse('posts:index'))
-        self.assertNotEquals(response_first.content, response_third.content)
+        self.assertNotEqual(response_first.content, response_third.content)
 
     def test_follow_index(self):
         """Проверка, что новые записи пользователя,
