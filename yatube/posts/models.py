@@ -24,12 +24,6 @@ class Post(CreatedModel):
         'текст',
         help_text='Прошу, пиши, что хочешь, свобода действий'
     )
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='posts',
-        verbose_name='автор',
-    )
     group = models.ForeignKey(
         Group,
         on_delete=models.SET_NULL,
@@ -49,6 +43,7 @@ class Post(CreatedModel):
         ordering = ('-pub_date',)
         verbose_name = 'Публикация'
         verbose_name_plural = 'Публикации'
+        default_related_name = 'posts'
 
     def __str__(self):
         return f'{self.text[:30]}'
@@ -65,16 +60,11 @@ class Comment(CreatedModel):
         related_name='comments',
         verbose_name='Пост'
     )
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='comments',
-        verbose_name='Автор'
-    )
 
     class Meta:
         verbose_name = 'Комментарии'
         verbose_name_plural = 'Комментарии'
+        default_related_name = 'comments'
 
 
 class Follow(CreatedModel):
@@ -84,13 +74,8 @@ class Follow(CreatedModel):
         related_name='follower',
         verbose_name='Подписчик'
     )
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='following',
-        verbose_name='Автор'
-    )
 
     class Meta:
         verbose_name = 'Подписки'
         verbose_name_plural = 'Подписки'
+        default_related_name = 'following'

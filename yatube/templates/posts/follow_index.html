@@ -3,8 +3,8 @@
   Интересно для вас
 {% endblock %}
 {% block content %}
-<h1>Интересно для вас</h1>
-{% include 'posts/includes/switcher.html' %}
+    <h1>Интересно для вас</h1>
+    {% include 'posts/includes/switcher.html' %}
     {% for post in page_obj %}
       {% include 'posts/includes/posts.html' %}
     {% endfor %}

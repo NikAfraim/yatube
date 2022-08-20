@@ -13,6 +13,7 @@ User = get_user_model()
 COUNT_OF_POST = 13
 NUMBER_OF_POSTS_IN_OTHER_GROUP_LIST = 0
 LIST_OF_POSTS_BY_UNFOLLOWER = []
+ZERO_FOLLOWER = 0
 
 
 class PostViewTests(TestCase):
@@ -32,7 +33,7 @@ class PostViewTests(TestCase):
             content=small_gif,
             content_type='image/gif'
         )
-        cls.user = User.objects.create(username='test_user')
+        cls.user = User.objects.create(username='user')
         cls.other_user = User.objects.create(username='other_user')
         cls.group = Group.objects.create(title='Заголовок', slug='test-slug',
                                          description='text')
@@ -65,6 +66,7 @@ class PostViewTests(TestCase):
         self.assertEqual(context_of_object.pub_date,
                          self.post.pub_date)
         self.assertEqual(context_of_object.image, self.post.image)
+        self.assertContains(response, '<img')
 
     def test_index_show_correct_context(self):
         """Проверка на корректность context для index"""
@@ -117,6 +119,7 @@ class PostViewTests(TestCase):
         form_fields = {
             'text': forms.fields.CharField,
             'group': forms.models.ModelChoiceField,
+            'image': forms.fields.ImageField,
         }
         for url, arg in urls:
             with self.subTest(url=url):
@@ -132,6 +135,7 @@ class PostViewTests(TestCase):
     def test_commenting_only_for_authorized_users(self):
         """Проверка, что комментировать посты
          может только авторизированный пользователь"""
+        count = Post.objects.count()
         response = self.client.get(reverse('posts:add_comment',
                                            args=(self.post.id,)))
         login = reverse('users:login')
@@ -141,9 +145,17 @@ class PostViewTests(TestCase):
                                             args=(self.post.id,)))
         self.assertRedirects(response, reverse('posts:post_detail',
                                                args=(self.post.id,)))
+        self.assertEqual(count, Post.objects.count())
 
     def test_new_comment(self):
         """Проверка, что появляется новый комментарий на post_detail"""
+        Comment.objects.all().delete()
+        count = Comment.objects.count()
+        Comment.objects.create(
+            text='comment',
+            post=self.post,
+            author=self.user
+        )
         response = self.authorized_user.get(reverse('posts:post_detail',
                                                     args=(self.post.id,)))
         self.assertIn('comments', response.context)
@@ -151,15 +163,22 @@ class PostViewTests(TestCase):
         self.assertEqual(comment_context.text, self.comment.text)
         self.assertEqual(comment_context.post, self.comment.post)
         self.assertEqual(comment_context.author, self.comment.author)
+        self.assertNotEqual(count, Comment.objects.count())
 
     def test_cache(self):
         """Проверка работы кэша"""
-        response = self.authorized_user.get(reverse('posts:index'))
         Post.objects.all().delete()
-        response_outdated_cache = response.content
+        Post.objects.create(
+            text='Текст', author=self.user,
+            group=self.group, image=self.uploaded
+        )
+        response_first = self.authorized_user.get(reverse('posts:index'))
+        Post.objects.all().delete()
+        response_second = self.authorized_user.get(reverse('posts:index'))
+        self.assertEquals(response_first.content, response_second.content)
         cache.clear()
-        response = self.authorized_user.get(reverse('posts:index'))
-        self.assertNotEqual(response.content, response_outdated_cache)
+        response_third = self.authorized_user.get(reverse('posts:index'))
+        self.assertNotEquals(response_first.content, response_third.content)
 
     def test_follow_index(self):
         """Проверка, что новые записи пользователя,
@@ -182,6 +201,26 @@ class PostViewTests(TestCase):
         posts_by_follower = list(response.context['page_obj'])
         self.assertNotEqual(LIST_OF_POSTS_BY_UNFOLLOWER,
                             posts_by_follower)
+
+    def test_follow(self):
+        """Проверка, что авторизированный пользователь,
+         может подписываться"""
+        self.assertEqual(ZERO_FOLLOWER, Follow.objects.count())
+        self.user_check_follow.get(reverse(
+            'posts:profile_follow', args=(self.user,)))
+        self.assertNotEqual(ZERO_FOLLOWER, Follow.objects.count())
+        follow = Follow.objects.first()
+        self.assertEqual(follow.author, self.user)
+        self.assertEqual(follow.user, self.other_user)
+
+    def test_unfollow(self):
+        """Проверка, что авторизированный пользователь, может отписываться"""
+        self.assertEqual(ZERO_FOLLOWER, Follow.objects.count())
+        Follow.objects.create(author=self.user,
+                              user=self.other_user)
+        self.user_check_follow.get(reverse(
+            'posts:profile_unfollow', args=(self.user,)))
+        self.assertEqual(ZERO_FOLLOWER, Follow.objects.count())
 
 
 class PaginatorViewsTest(TestCase):

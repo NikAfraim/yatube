@@ -4,8 +4,11 @@
 {% endblock %}
 {% block content %}
     <h1>Все посты пользователя {{ author.get_full_name }} </h1>
-    <h3>Всего постов: {{ count_post }} </h3>
-      {% if author != user %}
+    <h4>Всего постов: {{ count_post }}</h4>
+    <h4>Подписчики: {{ count_follower }}</h4>
+    <h4>Подписки: {{ count_following }}</h4>
+
+      {% if author != user and user.is_authenticated %}
        {% if following %}
         <a
           class="btn btn-lg btn-light"

@@ -38,10 +38,15 @@ class PostURLTests(TestCase):
             ('posts:index', None, '/'),
             ('posts:group_list', (self.group.slug,),
              f'/group/{self.group.slug}/'),
-            ('posts:profile', (self.user,), f'/profile/{self.user.username}/'),
+            ('posts:profile', (self.user,), f'/profile/{self.user}/'),
             ('posts:post_detail', (self.post.id,), f'/posts/{self.post.id}/'),
             ('posts:post_create', None, f'/posts/{self.post.id}/edit/'),
-            ('posts:post_edit', (self.post.id,), '/create/')
+            ('posts:post_edit', (self.post.id,), '/create/'),
+            ('posts:add_comment', (self.post.id,), f'/posts/{self.post.id}/comment/'),
+            ('posts:follow_index', None, '/follow/'),
+            ('posts:profile_follow', (self.user,), f'profile/{self.user.username}/follow'),
+            ('posts:profile_unfollow', (self.user_follower,), f'profile/{self.user_follower}/unfollow')
+
         )
         cache.clear()
 
@@ -54,6 +59,7 @@ class PostURLTests(TestCase):
             ('posts:post_detail', (self.post.id,), 'posts/post_detail.html',),
             ('posts:post_create', None, 'posts/create_post.html',),
             ('posts:post_edit', (self.post.id,), 'posts/create_post.html'),
+            ('posts:follow_index', None, 'posts/follow_index.html')
         )
         for url, arg, template in templates:
             with self.subTest(url=url):
@@ -64,20 +70,30 @@ class PostURLTests(TestCase):
     def test_urls_for_author(self):
         """Проверка доступа для автора"""
         for url, arg, hardcode in self.urls:
-            response = self.author.get(reverse(url, args=arg))
-            self.assertEqual(response.status_code, HTTPStatus.OK)
+            with self.subTest(url=url):
+                response = self.author.get(reverse(url, args=arg))
+                if url == 'posts:add_comment':
+                    self.assertRedirects(response, reverse('posts:post_detail',
+                                                           args=arg))
+                elif url in ['posts:profile_follow', 'posts:profile_unfollow']:
+                    self.assertRedirects(response, reverse('posts:profile',
+                                                           args=arg))
+                else:
+                    self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_urls_for_non_author(self):
         """Проверка доступа для не автора"""
         for url, arg, hardcode in self.urls:
             with self.subTest(url=url):
-                if url == 'posts:post_edit':
-                    response = self.non_author.get(reverse(url, args=arg),
-                                                   follow=True)
+                response = self.non_author.get(reverse(url, args=arg),
+                                               follow=True)
+                if url in ['posts:post_edit', 'posts:add_comment']:
                     self.assertRedirects(response, reverse(
                         'posts:post_detail', args=arg))
+                elif url in ['posts:profile_follow', 'posts:profile_unfollow']:
+                    self.assertRedirects(response, reverse('posts:profile',
+                                                           args=arg))
                 else:
-                    response = self.non_author.get(reverse(url, args=arg))
                     self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_urls_for_non_authorized(self):
@@ -86,7 +102,9 @@ class PostURLTests(TestCase):
             with self.subTest(url=url):
                 response = self.client.get(reverse(url, args=arg))
                 login = reverse('users:login')
-                if url in ['posts:post_edit', 'posts:post_create']:
+                if url in ['posts:post_edit', 'posts:post_create',
+                           'posts:add_comment', 'posts:follow_index',
+                           'posts:profile_follow', 'posts:profile_unfollow']:
                     unique_reverse = reverse(url, args=arg)
                     self.assertRedirects(response,
                                          f'{login}?next={unique_reverse}')
@@ -97,17 +115,8 @@ class PostURLTests(TestCase):
         """Проверка reverse"""
         for url, arg, hardcode in self.urls:
             with self.subTest(url=url):
-                if url not in ['posts:post_edit', 'posts:post_create']:
+                if url not in ['posts:post_edit',
+                               'posts:post_create',
+                               'posts:profile_follow',
+                               'posts:profile_unfollow']:
                     self.assertEqual(reverse(url, args=arg), hardcode)
-
-    def test_authorized_user_can_use_the_subscription(self):
-        """Проверка, что пользователь может подписываться и отписываться"""
-        follow_url = (
-            ('posts:profile_follow', (self.user,)),
-            ('posts:profile_unfollow', (self.user,))
-        )
-        for url, arg in follow_url:
-            with self.subTest(url=url):
-                response = self.follower.get(reverse(url, args=arg))
-                self.assertRedirects(response, reverse(
-                    'posts:profile', args=arg))
