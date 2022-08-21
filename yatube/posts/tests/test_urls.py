@@ -44,16 +44,16 @@ class PostURLTests(TestCase):
             ('posts:post_detail', (self.post.id,),
              f'/posts/{self.post.id}/'),
             ('posts:post_create', None,
-             f'/posts/{self.post.id}/edit/'),
-            ('posts:post_edit', (self.post.id,),
              '/create/'),
+            ('posts:post_edit', (self.post.id,),
+             f'/posts/{self.post.id}/edit/'),
             ('posts:add_comment', (self.post.id,),
              f'/posts/{self.post.id}/comment/'),
             ('posts:follow_index', None, '/follow/'),
             ('posts:profile_follow', (self.user,),
-             f'profile/{self.user.username}/follow'),
+             f'/profile/{self.user.username}/follow/'),
             ('posts:profile_unfollow', (self.user_follower,),
-             f'profile/{self.user_follower}/unfollow')
+             f'/profile/{self.user_follower}/unfollow/')
 
         )
         cache.clear()
@@ -123,8 +123,4 @@ class PostURLTests(TestCase):
         """Проверка reverse"""
         for url, arg, hardcode in self.urls:
             with self.subTest(url=url):
-                if url not in ['posts:post_edit',
-                               'posts:post_create',
-                               'posts:profile_follow',
-                               'posts:profile_unfollow']:
-                    self.assertEqual(reverse(url, args=arg), hardcode)
+                self.assertEqual(reverse(url, args=arg), hardcode)
