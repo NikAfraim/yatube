@@ -1,3 +1,12 @@
-# hw05_final
+# Yatube
+***
 
-[![CI](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml/badge.svg?branch=master)](https://github.com/yandex-praktikum/hw05_final/actions/workflows/python-app.yml)
+Проект Yatube - блог платформа
+
+Благодаря этому проекту можно:
+
+  - создавать свои группы-сообщества
+  - писать посты по теме сообщества
+  - комментировать посты других пользователей
+  - подписываться на интересных авторов
+***
