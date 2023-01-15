@@ -32,7 +32,7 @@ Cоздать и активировать виртуальное окружен�
 python3 -m venv venv
 ```
 ```
-source env/bin/activate
+source venv/bin/activate
 ```
 ```
 python3 -m pip install --upgrade pip
