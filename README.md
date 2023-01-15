@@ -14,8 +14,8 @@
 ## Технологии
 Yatube open-source технологии:
 
-Python 3.10
-Django 4.1
+Python 3.7
+Django 3.2
 ***
 
 
